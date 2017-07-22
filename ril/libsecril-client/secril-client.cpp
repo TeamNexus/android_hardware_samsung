@@ -1088,6 +1088,8 @@ static int SendOemRequestHookRaw(HRilClient client, int req_id, char *data, size
     RilClientPrv *client_prv;
     int maxfd = -1;
 
+    unsigned int check_req_id = req_id;
+
     client_prv = (RilClientPrv *)(client->prv);
 
     // Allocate a token.
@@ -1126,10 +1128,10 @@ static int SendOemRequestHookRaw(HRilClient client, int req_id, char *data, size
         goto error;
     }
 
-	// Samsung's blog (at least for the Galaxy S6) do not free the tokens
-	// properly, so do this right after request was sent.
-	FreeToken(&(client_prv->token_pool), token);
-	ClearReqHistory(client_prv, token);
+    // Samsung's blob (at least for the Galaxy S6) do not free the tokens
+    // properly, so do this right after request was sent.
+    FreeToken(&(client_prv->token_pool), token);
+    ClearReqHistory(client_prv, token);
 
     return RIL_CLIENT_ERR_SUCCESS;
 
