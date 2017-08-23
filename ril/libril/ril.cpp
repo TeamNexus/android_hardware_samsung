@@ -168,6 +168,10 @@ extern "C" const char * rilSocketIdToString(RIL_SOCKET_ID socket_id);
 
 extern "C"
 char rild[MAX_SOCKET_NAME_LENGTH] = SOCKET_NAME_RIL;
+extern "C"
+char ril_service_name_base[MAX_SERVICE_NAME_LENGTH] = RIL_SERVICE_NAME_BASE;
+extern "C"
+char ril_service_name[MAX_SERVICE_NAME_LENGTH] = RIL1_SERVICE_NAME;
 
 #define RIL_VENDOR_COMMANDS_OFFSET 10000
 
@@ -401,6 +405,18 @@ extern "C"
 void RIL_setRilSocketName(const char * s) {
     strncpy(rild, s, MAX_SOCKET_NAME_LENGTH);
 }
+
+char * RIL_getServiceName() {
+    return ril_service_name;
+}
+
+extern "C"
+void RIL_setServiceName(const char * s) {
+    strncpy(ril_service_name, s, MAX_SERVICE_NAME_LENGTH);
+}
+
+extern "C"
+void rilc_thread_pool() { }
 
 static char *
 strdupReadString(Parcel &p) {
