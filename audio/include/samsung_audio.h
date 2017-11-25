@@ -73,6 +73,12 @@
 #define SUPPORTS_IRQ_AFFINITY 0
 
 /*
+ * ril_set_call_clock_sync() may cause unknown problems with the call-mic.
+ * Uncomment this to disable the support for it.
+ */
+// #define DISABLE_CALL_CLOCK_SYNC
+
+/*
  * The Wolfson/Cirruslogic chips need to shutdown the DAPM route completely
  * to be able to load a new firmware. Some of these chips need a delay after
  * shutodown to full poweroff the DSPs.
