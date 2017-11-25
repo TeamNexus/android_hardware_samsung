@@ -3592,8 +3592,9 @@ int radio::getVoiceRegistrationStateResponse(int slotId,
                RLOGE("getVoiceRegistrationStateResponse Invalid response: NULL");
                if (e == RIL_E_SUCCESS) responseInfo.error = RadioError::INVALID_RESPONSE;
         } else if (s_vendorFunctions->version <= 14) {
-            if (numStrings != 15) {
-                RLOGE("getVoiceRegistrationStateResponse Invalid response: NULL");
+            if (numStrings < 15) {
+                RLOGE("getVoiceRegistrationStateResponse Invalid response: numStrings < 15 (%d < 15)",
+						numStrings);
                 if (e == RIL_E_SUCCESS) responseInfo.error = RadioError::INVALID_RESPONSE;
             } else {
                 char **resp = (char **) response;
@@ -3611,8 +3612,9 @@ int radio::getVoiceRegistrationStateResponse(int slotId,
             RIL_VoiceRegistrationStateResponse *voiceRegState =
                     (RIL_VoiceRegistrationStateResponse *)response;
 
-            if (responseLen != sizeof(RIL_VoiceRegistrationStateResponse)) {
-                RLOGE("getVoiceRegistrationStateResponse Invalid response: NULL");
+            if (responseLen < sizeof(RIL_VoiceRegistrationStateResponse)) {
+                RLOGE("getVoiceRegistrationStateResponse Invalid response: responseLen < sizeof(RIL_VoiceRegistrationStateResponse) (%d < %d)",
+						responseLen, sizeof(RIL_VoiceRegistrationStateResponse));
                 if (e == RIL_E_SUCCESS) responseInfo.error = RadioError::INVALID_RESPONSE;
             } else {
                 voiceRegResponse.regState = (RegState) voiceRegState->regState;
@@ -3655,8 +3657,8 @@ int radio::getDataRegistrationStateResponse(int slotId,
             if (e == RIL_E_SUCCESS) responseInfo.error = RadioError::INVALID_RESPONSE;
         } else if (s_vendorFunctions->version <= 14) {
             int numStrings = responseLen / sizeof(char *);
-            if ((numStrings != 6) && (numStrings != 11)) {
-                RLOGE("getDataRegistrationStateResponse Invalid response: NULL");
+            if (numStrings < 6) {
+                RLOGE("getDataRegistrationStateResponse Invalid response: numStrings < 6 (%d < 6)", numStrings);
                 if (e == RIL_E_SUCCESS) responseInfo.error = RadioError::INVALID_RESPONSE;
             } else {
                 char **resp = (char **) response;
@@ -3671,8 +3673,9 @@ int radio::getDataRegistrationStateResponse(int slotId,
             RIL_DataRegistrationStateResponse *dataRegState =
                     (RIL_DataRegistrationStateResponse *)response;
 
-            if (responseLen != sizeof(RIL_DataRegistrationStateResponse)) {
-                RLOGE("getDataRegistrationStateResponse Invalid response: NULL");
+            if (responseLen < sizeof(RIL_DataRegistrationStateResponse)) {
+                RLOGE("getDataRegistrationStateResponse Invalid response: responseLen < sizeof(RIL_DataRegistrationStateResponse) (%d < %d)",
+						responseLen, sizeof(RIL_DataRegistrationStateResponse));
                 if (e == RIL_E_SUCCESS) responseInfo.error = RadioError::INVALID_RESPONSE;
             } else {
                 dataRegResponse.regState = (RegState) dataRegState->regState;
