@@ -323,6 +323,8 @@ void stop_voice_session(struct voice_session *session)
     es_stop_voice_session();
 #endif
 
+    ril_set_call_clock_sync(&session->ril, SOUND_CLOCK_STOP);
+
     session->out_device = AUDIO_DEVICE_NONE;
 
     ALOGV("%s: Successfully closed %d active PCMs", __func__, status);
