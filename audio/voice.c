@@ -147,6 +147,8 @@ static void stop_voice_session_bt_sco(struct voice_session *session) {
         pcm_close(session->pcm_sco_tx);
         session->pcm_sco_tx = NULL;
     }
+
+    session->bt_sco_active = false;
 }
 
 /* must be called with the hw device mutex locked, OK to hold other mutexes */
@@ -187,6 +189,7 @@ void start_voice_session_bt_sco(struct voice_session *session)
     pcm_start(session->pcm_sco_rx);
     pcm_start(session->pcm_sco_tx);
 
+    session->bt_sco_active = true;
     return;
 
 err_sco_tx:
