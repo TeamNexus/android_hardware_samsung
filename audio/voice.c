@@ -125,6 +125,8 @@ void prepare_voice_session(struct voice_session *session,
     if (session->two_mic_disabled) {
         session->two_mic_control = false;
     }
+
+    session->bt_sco_active = false;
 }
 
 /*

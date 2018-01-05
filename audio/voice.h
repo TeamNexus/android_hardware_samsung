@@ -34,6 +34,8 @@ struct voice_session {
 
     /* from uc_info */
     audio_devices_t out_device;
+
+    bool bt_sco_active;
 };
 
 void prepare_voice_session(struct voice_session *session,
