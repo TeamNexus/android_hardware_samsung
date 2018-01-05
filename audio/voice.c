@@ -305,7 +305,7 @@ void stop_voice_session(struct voice_session *session)
         status++;
     }
 
-    if (session->out_device & AUDIO_DEVICE_OUT_ALL_SCO) {
+    if ((session->out_device & AUDIO_DEVICE_OUT_ALL_SCO) && session->bt_sco_active) {
         stop_voice_session_bt_sco(session);
     }
 
