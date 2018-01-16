@@ -4166,13 +4166,11 @@ static int adev_set_parameters(struct audio_hw_device *dev, const char *kvpairs)
                             value,
                             sizeof(value));
     if (ret >= 0) {
-        /* TODO: Add support in voice calls */
+        ALOGE("%s: BT_CALL -- BT_SCO_WB param, value=%s!", __func__, value);
         if (strcmp(value, AUDIO_PARAMETER_VALUE_ON) == 0) {
-            adev->voice.bluetooth_wb = true;
-            ALOGI("%s: Implement support for BT SCO wideband calls!!!",
-                  __func__);
+            set_voice_session_bt_wideband(adev, true);
         } else {
-            adev->voice.bluetooth_wb = false;
+            set_voice_session_bt_wideband(adev, false);
         }
     }
 

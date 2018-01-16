@@ -168,7 +168,7 @@ void start_voice_session_bt_sco(struct voice_session *session)
 
     ALOGV("%s: Opening SCO PCMs", __func__);
 
-    if (session->wb_amr_type >= 1) {
+    if (session->bluetooth_wb) {
         ALOGV("%s: pcm_config wideband", __func__);
         voice_sco_config = &pcm_config_voice_sco_wb;
     } else {
@@ -372,8 +372,27 @@ bool voice_session_uses_twomic(struct voice_session *session)
     return session->two_mic_control;
 }
 
+void set_voice_session_bt_wideband(struct audio_device *adev, bool enable)
+{
+    struct voice_session *session =
+        (struct voice_session *)adev->voice.session;
+
+    session->bluetooth_wb = enable;
+
+    /* reopen the PCMs at the new rate */
+    if (adev->voice.in_call) {
+        ALOGE("%s: BT_CALL -- call active, restarting!", __func__);
+        stop_voice_call(adev);
+        start_voice_call(adev);
+    }
+}
+
 bool voice_session_uses_wideband(struct voice_session *session)
 {
+    if (session->out_device & AUDIO_DEVICE_OUT_ALL_SCO) {
+        return session->bluetooth_wb;
+    }
+
     return session->wb_amr_type >= 1;
 }
 
@@ -457,6 +476,8 @@ struct voice_session *voice_session_init(struct audio_device *adev)
             ALOGV("%s: WB_AMR callback not supported", __func__);
         }
     }
+
+    session->bluetooth_wb = false;
 
     return session;
 }

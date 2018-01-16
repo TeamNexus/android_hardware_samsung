@@ -29,6 +29,7 @@ struct voice_session {
     struct pcm *pcm_sco_tx;
 
     int wb_amr_type;
+    bool bluetooth_wb;
     bool two_mic_control;
     bool two_mic_disabled;
 
@@ -45,6 +46,7 @@ void set_voice_session_audio_path(struct voice_session *session);
 void set_voice_session_mic_mute(struct voice_session *session, bool state);
 
 void start_voice_session_bt_sco(struct voice_session *session);
+void set_voice_session_bt_wideband(struct audio_device *adev, bool enable);
 
 bool voice_session_uses_twomic(struct voice_session *session);
 bool voice_session_uses_wideband(struct voice_session *session);
