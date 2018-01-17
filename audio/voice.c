@@ -62,6 +62,15 @@ struct pcm_config pcm_config_voice_sco = {
     .format = PCM_FORMAT_S16_LE,
 };
 
+/* SCO WB and NB uses 8kHz for now, 16kHz it's on TO DO*/
+struct pcm_config pcm_config_voice_sco_wb = {
+    .channels = 1,
+    .rate = SCO_DEFAULT_SAMPLING_RATE,
+    .period_size = SCO_PERIOD_SIZE,
+    .period_count = SCO_PERIOD_COUNT,
+    .format = PCM_FORMAT_S16_LE,
+};
+
 /* Prototypes */
 int start_voice_call(struct audio_device *adev);
 int stop_voice_call(struct audio_device *adev);
@@ -125,8 +134,6 @@ void prepare_voice_session(struct voice_session *session,
     if (session->two_mic_disabled) {
         session->two_mic_control = false;
     }
-
-    session->bt_sco_active = false;
 }
 
 /*
@@ -147,8 +154,6 @@ static void stop_voice_session_bt_sco(struct voice_session *session) {
         pcm_close(session->pcm_sco_tx);
         session->pcm_sco_tx = NULL;
     }
-
-    session->bt_sco_active = false;
 }
 
 /* must be called with the hw device mutex locked, OK to hold other mutexes */
@@ -163,8 +168,13 @@ void start_voice_session_bt_sco(struct voice_session *session)
 
     ALOGV("%s: Opening SCO PCMs", __func__);
 
-    /* always use 16kHz for SCO */
-    voice_sco_config = &pcm_config_voice_sco;
+    if (session->wb_amr_type >= 1) {
+        ALOGV("%s: pcm_config wideband", __func__);
+        voice_sco_config = &pcm_config_voice_sco_wb;
+    } else {
+        ALOGV("%s: pcm_config narrowband", __func__);
+        voice_sco_config = &pcm_config_voice_sco;
+    }
 
     session->pcm_sco_rx = pcm_open(SOUND_CARD,
                                    SOUND_PLAYBACK_SCO_DEVICE,
@@ -189,7 +199,6 @@ void start_voice_session_bt_sco(struct voice_session *session)
     pcm_start(session->pcm_sco_rx);
     pcm_start(session->pcm_sco_tx);
 
-    session->bt_sco_active = true;
     return;
 
 err_sco_tx:
@@ -305,7 +314,7 @@ void stop_voice_session(struct voice_session *session)
         status++;
     }
 
-    if ((session->out_device & AUDIO_DEVICE_OUT_ALL_SCO) && session->bt_sco_active) {
+    if (session->out_device & AUDIO_DEVICE_OUT_ALL_SCO) {
         stop_voice_session_bt_sco(session);
     }
 
