@@ -22,20 +22,6 @@
 
 #define NUM_ELEMS_SOCKET(a)     (sizeof (a) / sizeof (a)[0])
 
-typedef void (*ril_event_cb)(int fd, short events, void *userdata);
-
-struct ril_event {
-    struct ril_event *next;
-    struct ril_event *prev;
-
-    int fd;
-    int index;
-    bool persist;
-    struct timeval timeout;
-    ril_event_cb func;
-    void *param;
-};
-
 void rilEventAddWakeup_helper(struct ril_event *ev);
 void listenCallback_helper(int fd, short flags, void *param);
 int blockingWrite_helper(int fd, void* data, size_t len);
