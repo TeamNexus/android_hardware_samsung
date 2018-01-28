@@ -3268,7 +3268,8 @@ int radio::getSignalStrengthResponse(int slotId,
         SignalStrength signalStrength = {};
         if (response == NULL || (responseLen != sizeof(RIL_SignalStrength_v10)
                 && responseLen != sizeof(RIL_SignalStrength_v8)
-                && responseLen != sizeof(RIL_SignalStrength_v6))) {
+                && responseLen != sizeof(RIL_SignalStrength_v6)
+                && responseLen != sizeof(RIL_SignalStrength_v5))) {
             RLOGE("getSignalStrengthResponse: Invalid response");
             if (e == RIL_E_SUCCESS) responseInfo.error = RadioError::INVALID_RESPONSE;
         } else {
@@ -3706,7 +3707,7 @@ int radio::getOperatorResponse(int slotId,
     int mqanelements;
     char value[PROPERTY_VALUE_MAX];
     property_get("ro.ril.telephony.mqanelements", value, "4");
-	mqanelements = atoi(value);
+    mqanelements = atoi(value);
 
     if (radioService[slotId]->mRadioResponse != NULL) {
         RadioResponseInfo responseInfo = {};
