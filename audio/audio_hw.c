@@ -3191,11 +3191,11 @@ false_alarm:
                 }
                 frames_rq = bytes / frame_size;
                 frames_wr = pcm_device->res_byte_count / frame_size;
-                ALOGVV("%s: resampler request frames = %d frame_size = %d",
+                ALOGVV("%s: resampler request frames = %zd frame_size = %zd",
                     __func__, frames_rq, frame_size);
                 pcm_device->resampler->resample_from_input(pcm_device->resampler,
                     (int16_t *)buffer, &frames_rq, (int16_t *)pcm_device->res_buffer, &frames_wr);
-                ALOGVV("%s: resampler output frames_= %d", __func__, frames_wr);
+                ALOGVV("%s: resampler output frames_= %zd", __func__, frames_wr);
             }
             if (pcm_device->pcm) {
 #ifdef PREPROCESSING_ENABLED
@@ -3208,7 +3208,7 @@ false_alarm:
                     out->echo_reference->write(out->echo_reference, &b);
                  }
 #endif
-                ALOGVV("%s: writing buffer (%d bytes) to pcm device", __func__, bytes);
+                ALOGVV("%s: writing buffer (%zd bytes) to pcm device", __func__, bytes);
                 if (pcm_device->resampler && pcm_device->res_buffer)
                     pcm_device->status =
                         pcm_write(pcm_device->pcm, (void *)pcm_device->res_buffer,
