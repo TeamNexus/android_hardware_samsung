@@ -15,7 +15,7 @@
  */
  
 #define LOG_TAG "libexynoscolormatrix"
-#define LOG_NDEBUG 0
+#define LOG_NDEBUG 1
 
 #include <stdio.h>
 
