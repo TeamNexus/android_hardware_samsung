@@ -45,8 +45,4 @@ include $(SAM_ROOT)/liblights/Android.mk
 include $(SAM_ROOT)/modemloader/Android.mk
 include $(SAM_ROOT)/power/Android.mk
 include $(SAM_ROOT)/ril/Android.mk
-
-ifeq ($(TARGET_COLOR_MATRIX_LOGIC),libexynoscolormatrix)
-include $(SAM_ROOT)/colormatrix/Android.mk
-endif
 endif
