@@ -51,8 +51,7 @@ void lock_input_stream(struct stream_in *in);
 void lock_output_stream(struct stream_out *out);
 int disable_snd_device(struct audio_device *adev,
                               struct audio_usecase *uc_info,
-                              snd_device_t snd_device,
-                              bool update_mixer);
+                              snd_device_t snd_device);
 int enable_output_path_l(struct stream_out *out);
 int disable_output_path_l(struct stream_out *out);
 
@@ -250,7 +249,7 @@ int out_set_offload_parameters(struct audio_device *adev, struct audio_usecase *
     if (uc_info != NULL && uc_info->out_snd_device == SND_DEVICE_OUT_SPEAKER_AND_HEADPHONES) {
         ALOGV("Out_set_param: spk+headset enabled\n");
         uc_info->out_snd_device = SND_DEVICE_OUT_HEADPHONES;
-        disable_snd_device(adev, uc_info, SND_DEVICE_OUT_SPEAKER, true);
+        disable_snd_device(adev, uc_info, SND_DEVICE_OUT_SPEAKER);
     }
 
     return ret;
