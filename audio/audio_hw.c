@@ -17,8 +17,8 @@
  */
 
 #define LOG_TAG "audio_hw_primary"
-/*#define LOG_NDEBUG 0*/
-/*#define VERY_VERY_VERBOSE_LOGGING*/
+#define LOG_NDEBUG 0
+#define VERY_VERY_VERBOSE_LOGGING
 #ifdef VERY_VERY_VERBOSE_LOGGING
 #define ALOGVV ALOGV
 #else
