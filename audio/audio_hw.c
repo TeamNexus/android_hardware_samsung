@@ -779,8 +779,8 @@ static snd_device_t get_input_snd_device(struct audio_device *adev, audio_device
     channel_mask = (active_input == NULL) ?
                                 AUDIO_CHANNEL_IN_MONO : active_input->main_channels;
 
-    ALOGV("%s: enter: out_device(%#x) in_device(%#x)",
-          __func__, out_device, in_device);
+    ALOGV("%s: enter: out_device(%#x) in_device(%#x ->%#x)",
+          __func__, out_device, active_input->devices, in_device);
     if (mode == AUDIO_MODE_IN_CALL) {
         if (out_device == AUDIO_DEVICE_NONE) {
             ALOGE("%s: No output device set for voice call", __func__);
