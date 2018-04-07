@@ -3316,7 +3316,7 @@ static int out_get_presentation_position(const struct audio_stream_out *stream,
                                    uint64_t *frames, struct timespec *timestamp)
 {
     struct stream_out *out = (struct stream_out *)stream;
-    int ret = -ENODATA;
+    int ret = -EINVAL;
 
     lock_output_stream(out);
 
@@ -3355,7 +3355,6 @@ static int out_get_presentation_position(const struct audio_stream_out *stream,
                             ret = 0;
                             goto done;
                         }
-                        ret = -1;
                     }
                 }
             }
