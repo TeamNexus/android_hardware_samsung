@@ -19,6 +19,7 @@
 #include <dlfcn.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
 
 #include <cutils/log.h>
 
