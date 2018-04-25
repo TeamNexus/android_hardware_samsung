@@ -54,6 +54,9 @@
 #endif
 #endif
 
+#define MIXER_PATH_MAX_LENGTH 100
+#define MIXER_XML_PATH "mixer_paths_0.xml"
+
 /* Unusupported
 #define SOUND_CAPTURE_LOOPBACK_AEC_DEVICE 1
 #define SOUND_CAPTURE_HOTWORD_DEVICE 0
@@ -73,12 +76,6 @@
 #define SUPPORTS_IRQ_AFFINITY 0
 
 /*
- * ril_set_call_clock_sync() can cause problems with changing
- * call-volume and muting the mic in a call.
- */
-// #define DISABLE_CALL_CLOCK_SYNC
-
-/*
  * The Wolfson/Cirruslogic chips need to shutdown the DAPM route completely
  * to be able to load a new firmware. Some of these chips need a delay after
  * shutodown to full poweroff the DSPs.
@@ -96,30 +93,5 @@
  * this extra firmware so RX/TX streams can be routed by the driver.
  */
 /* #define AUDIENCE_EARSMART_IC */
-
-/*
- * Runtime mixer paths file selection routine
- *
- * Example:
- *
- *     static bool device_mixer_paths_file_routine(char *path)
- *
- *     @argument  path    sprintf-input used instead of default one
- *
- *     @returns   true if a custom path was found, false if the default one
- *                should be used
- */
-// #define MIXER_PATHS_FILE_ROUTINE
-
-/*
- * Runtime audience support detection
- *
- * Example:
- *
- *     static bool device_audio_supports_audience()
- *
- *     @returns   true if audience-support should be enabled, false otherwise
- */
-// #define AUDIENCE_SUPPORTED
 
 #endif // SAMSUNG_AUDIO_H

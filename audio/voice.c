@@ -16,7 +16,7 @@
 
 #define LOG_TAG "audio_hw_voice"
 #define LOG_NDEBUG 0
-#define VERY_VERY_VERBOSE_LOGGING
+/*#define VERY_VERY_VERBOSE_LOGGING*/
 #ifdef VERY_VERY_VERBOSE_LOGGING
 #define ALOGVV ALOGV
 #else
@@ -34,26 +34,9 @@
 #include "audio_hw.h"
 #include "voice.h"
 
+#ifdef AUDIENCE_EARSMART_IC
 #include "audience.h"
-
-#ifndef AUDIENCE_SUPPORTED
-  #ifdef AUDIENCE_EARSMART_IC
-    #define AUDIENCE_SUPPORTED()  (true)
-  #else
-    #define AUDIENCE_SUPPORTED()  (false)
-  #endif
 #endif
-
-/**
- * container_of - cast a member of a structure out to the containing structure
- * @ptr:    the pointer to the member.
- * @type:   the type of the container struct this is embedded in.
- * @member: the name of the member within the struct.
- *
- */
-#define container_of(ptr, type, member) ({              \
-    void *__mptr = (void *)(ptr);                   \
-    ((type *)((uintptr_t)__mptr - offsetof(type, member))); })
 
 static struct pcm_config pcm_config_voicecall = {
     .channels = 2,
@@ -79,10 +62,9 @@ struct pcm_config pcm_config_voice_sco = {
     .format = PCM_FORMAT_S16_LE,
 };
 
-/* SCO WB and NB uses 8kHz for now, 16kHz it's on TO DO*/
 struct pcm_config pcm_config_voice_sco_wb = {
     .channels = 1,
-    .rate = SCO_DEFAULT_SAMPLING_RATE,
+    .rate = SCO_WB_SAMPLING_RATE,
     .period_size = SCO_PERIOD_SIZE,
     .period_count = SCO_PERIOD_COUNT,
     .format = PCM_FORMAT_S16_LE,
@@ -157,7 +139,7 @@ void prepare_voice_session(struct voice_session *session,
  * This must be called with the hw device mutex locked, OK to hold other
  * mutexes.
  */
-static void stop_voice_session_bt_sco(struct voice_session *session) {
+void stop_voice_session_bt_sco(struct voice_session *session) {
     ALOGV("%s: Closing SCO PCMs", __func__);
 
     if (session->pcm_sco_rx != NULL) {
@@ -177,7 +159,6 @@ static void stop_voice_session_bt_sco(struct voice_session *session) {
 void start_voice_session_bt_sco(struct voice_session *session)
 {
     struct pcm_config *voice_sco_config;
-    struct voice_data *vdata = container_of(session, struct voice_data, session);
 
     if (session->pcm_sco_rx != NULL || session->pcm_sco_tx != NULL) {
         ALOGW("%s: SCO PCMs already open!\n", __func__);
@@ -186,7 +167,7 @@ void start_voice_session_bt_sco(struct voice_session *session)
 
     ALOGV("%s: Opening SCO PCMs", __func__);
 
-    if (vdata->bluetooth_wb) {
+    if (session->vdata->bluetooth_wb) {
         ALOGV("%s: pcm_config wideband", __func__);
         voice_sco_config = &pcm_config_voice_sco_wb;
     } else {
@@ -284,14 +265,10 @@ int start_voice_session(struct voice_session *session)
     pcm_start(session->pcm_voice_rx);
     pcm_start(session->pcm_voice_tx);
 
-    if (session->out_device & AUDIO_DEVICE_OUT_ALL_SCO) {
-        start_voice_session_bt_sco(session);
-    }
-
-    if (AUDIENCE_SUPPORTED()) {
-        ALOGV("%s: Enabling Audience IC", __func__);
-        es_start_voice_session(session);
-    }
+#ifdef AUDIENCE_EARSMART_IC
+    ALOGV("%s: Enabling Audience IC", __func__);
+    es_start_voice_session(session);
+#endif
 
     if (session->two_mic_control) {
         ALOGV("%s: enabling two mic control", __func__);
@@ -300,10 +277,6 @@ int start_voice_session(struct voice_session *session)
         ALOGV("%s: disabling two mic control", __func__);
         ril_set_two_mic_control(&session->ril, AUDIENCE, TWO_MIC_SOLUTION_OFF);
     }
-
-#ifndef DISABLE_CALL_CLOCK_SYNC
-    ril_set_call_clock_sync(&session->ril, SOUND_CLOCK_START);
-#endif
 
     return 0;
 }
@@ -315,6 +288,8 @@ int start_voice_session(struct voice_session *session)
 void stop_voice_session(struct voice_session *session)
 {
     int status = 0;
+
+    ril_set_call_clock_sync(&session->ril, SOUND_CLOCK_STOP);
 
     ALOGV("%s: Closing active PCMs", __func__);
 
@@ -332,14 +307,10 @@ void stop_voice_session(struct voice_session *session)
         status++;
     }
 
-    if (session->out_device & AUDIO_DEVICE_OUT_ALL_SCO) {
-        stop_voice_session_bt_sco(session);
-    }
-
-    if (AUDIENCE_SUPPORTED()) {
-        ALOGV("%s: Disabling Audience IC", __func__);
-        es_stop_voice_session();
-    }
+#ifdef AUDIENCE_EARSMART_IC
+    ALOGV("%s: Disabling Audience IC", __func__);
+    es_stop_voice_session();
+#endif
 
     session->out_device = AUDIO_DEVICE_NONE;
 
@@ -392,10 +363,8 @@ bool voice_session_uses_twomic(struct voice_session *session)
 
 bool voice_session_uses_wideband(struct voice_session *session)
 {
-    struct voice_data *vdata = container_of(session, struct voice_data, session);
-
     if (session->out_device & AUDIO_DEVICE_OUT_ALL_SCO) {
-        return vdata->bluetooth_wb;
+        return session->vdata->bluetooth_wb;
     }
 
     return session->wb_amr_type >= 1;
@@ -481,6 +450,8 @@ struct voice_session *voice_session_init(struct audio_device *adev)
             ALOGV("%s: WB_AMR callback not supported", __func__);
         }
     }
+
+    session->vdata = &adev->voice;
 
     return session;
 }
