@@ -2408,19 +2408,6 @@ Return<void> RadioImpl::setDataProfile(int32_t serial, const hidl_vec<DataProfil
                 success = false;
             }
 
-            // FIXUP: at least the libsec-ril on zero can't handle user and password
-            // being passed as NULL-pointers. Copy an empty string into it to work around
-            static hidl_string HIDL_EMPTY = hidl_string("");
-
-            if (success && dataProfiles[i].user == NULL && !copyHidlStringToRil(
-                    &dataProfiles[i].user, HIDL_EMPTY, pRI)) {
-                success = false;
-            }
-            if (success && dataProfiles[i].password == NULL && !copyHidlStringToRil(
-                    &dataProfiles[i].password, HIDL_EMPTY, pRI)) {
-                success = false;
-            }
-
             if (!success) {
                 freeSetDataProfileData(num, dataProfiles, dataProfilePtrs, 4,
                     &RIL_DataProfileInfo::apn, &RIL_DataProfileInfo::protocol,
@@ -2492,19 +2479,6 @@ Return<void> RadioImpl::setDataProfile(int32_t serial, const hidl_vec<DataProfil
             if (success && !convertMvnoTypeToString(profiles[i].mvnoType,
                     dataProfiles[i].mvnoType)) {
                 sendErrorResponse(pRI, RIL_E_INVALID_ARGUMENTS);
-                success = false;
-            }
-
-            // FIXUP: at least the libsec-ril on zero can't handle user and password
-            // being passed as NULL-pointers. Copy an empty string into it to work around
-            static hidl_string HIDL_EMPTY = hidl_string("");
-
-            if (success && dataProfiles[i].user == NULL && !copyHidlStringToRil(
-                    &dataProfiles[i].user, HIDL_EMPTY, pRI)) {
-                success = false;
-            }
-            if (success && dataProfiles[i].password == NULL && !copyHidlStringToRil(
-                    &dataProfiles[i].password, HIDL_EMPTY, pRI)) {
                 success = false;
             }
 
