@@ -391,6 +391,21 @@ static const int kConfigLocationListSize =
 
 bool resolve_config_file(char file_name[MIXER_PATH_MAX_LENGTH]) {
     char full_config_path[MIXER_PATH_MAX_LENGTH];
+
+#ifdef MIXER_PATHS_FILE_ROUTINE
+    char dynamic_config_path[MIXER_PATH_MAX_LENGTH];
+
+    if (MIXER_PATHS_FILE_ROUTINE(dynamic_config_path)) {
+        if (access(dynamic_config_path, F_OK) == F_OK) {
+                       strcpy(file_name, dynamic_config_path);
+                       return true;
+        } else {
+            ALOGE("%s: Failed to open mixer paths from %s, retrying default locations",
+                  __func__, dynamic_config_path);
+               }
+    }
+#endif
+
     for (int i = 0; i < kConfigLocationListSize; i++) {
         snprintf(full_config_path,
                  MIXER_PATH_MAX_LENGTH,
