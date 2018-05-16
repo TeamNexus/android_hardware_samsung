@@ -891,10 +891,15 @@ static int select_devices(struct audio_device *adev,
     active_out = (struct stream_out *)usecase->stream;
 
     if (usecase->type == VOICE_CALL) {
+        /*
+         * Prepare the voice session before selecting the sound devices to
+         * make sure that especially the twomic-control is set correctly
+         */
+        prepare_voice_session(adev->voice.session, active_out->devices);
+
         out_snd_device = get_output_snd_device(adev, active_out->devices);
         in_snd_device = get_input_snd_device(adev, active_out->devices);
         usecase->devices = active_out->devices;
-        prepare_voice_session(adev->voice.session, active_out->devices);
     } else {
         /*
          * If the voice call is active, use the sound devices of voice call usecase
