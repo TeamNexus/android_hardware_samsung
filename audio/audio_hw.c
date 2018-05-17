@@ -68,7 +68,7 @@ static struct pcm_config pcm_config_playback = {
     .avail_min = PLAYBACK_AVAILABLE_MIN,
 };
 
-static struct pcm_config pcm_config_deep_buffer = {
+/* static struct pcm_config pcm_config_deep_buffer = {
     .channels = PLAYBACK_DEFAULT_CHANNEL_COUNT,
     .rate = DEEP_BUFFER_OUTPUT_SAMPLING_RATE,
     .period_size = DEEP_BUFFER_OUTPUT_PERIOD_SIZE,
@@ -77,7 +77,7 @@ static struct pcm_config pcm_config_deep_buffer = {
     .start_threshold = DEEP_BUFFER_OUTPUT_PERIOD_SIZE / 4,
     .stop_threshold = INT_MAX,
     .avail_min = DEEP_BUFFER_OUTPUT_PERIOD_SIZE / 4,
-};
+}; */
 
 static struct pcm_config pcm_config_capture = {
     .channels = CAPTURE_DEFAULT_CHANNEL_COUNT,
@@ -3383,11 +3383,6 @@ static int adev_open_output_stream(struct audio_hw_device *dev,
         ALOGV("%s: offloaded output offload_info version %04x bit rate %d",
                 __func__, config->offload_info.version,
                 config->offload_info.bit_rate);
-    } else if (out->flags & (AUDIO_OUTPUT_FLAG_DEEP_BUFFER)) {
-        out->usecase = USECASE_AUDIO_PLAYBACK_DEEP_BUFFER;
-        out->config = pcm_config_deep_buffer;
-        out->sample_rate = out->config.rate;
-        ALOGV("%s: use AUDIO_PLAYBACK_DEEP_BUFFER",__func__);
     } else {
         out->usecase = USECASE_AUDIO_PLAYBACK;
         out->config = pcm_config_playback;
