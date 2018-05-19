@@ -48,6 +48,12 @@ struct effect_info_s {
 };
 #endif
 
+#ifdef __LP64__
+#define SOUND_TRIGGER_HAL_LIBRARY_PATH "/system/lib64/hw/sound_trigger.primary.flounder.so"
+#else
+#define SOUND_TRIGGER_HAL_LIBRARY_PATH "/system/lib/hw/sound_trigger.primary.flounder.so"
+#endif
+
 /* Sound devices specific to the platform
  * The DEVICE_OUT_* and DEVICE_IN_* should be mapped to these sound
  * devices to enable corresponding mixer paths
@@ -152,6 +158,7 @@ enum {
 #define CAPTURE_PERIOD_COUNT_LOW_LATENCY 2
 #define CAPTURE_DEFAULT_CHANNEL_COUNT 2
 #define CAPTURE_DEFAULT_SAMPLING_RATE 48000
+#define CAPTURE_DEFAULT_SAMPLING_RATE_LOW_LATENCY 16000
 #define CAPTURE_START_THRESHOLD 1
 
 #define COMPRESS_CARD       0
@@ -184,6 +191,7 @@ typedef enum {
 
     /* Capture usecases */
     USECASE_AUDIO_CAPTURE,
+    USECASE_AUDIO_CAPTURE_HOTWORD,
 
     USECASE_VOICE_CALL,
     AUDIO_USECASE_MAX
@@ -218,6 +226,7 @@ typedef enum {
     PCM_PLAYBACK = 0x1,
     PCM_CAPTURE = 0x2,
     VOICE_CALL = 0x4,
+    PCM_HOTWORD_STREAMING = 0x8,
     PCM_CAPTURE_LOW_LATENCY = 0x10,
 } usecase_type_t;
 
@@ -227,14 +236,33 @@ struct offload_cmd {
     int             data[];
 };
 
+struct pcm_device_profile {
+    struct pcm_config config;
+    int               card;
+    int               id;
+    usecase_type_t    type;
+    audio_devices_t   devices;
+};
+
+struct pcm_device {
+    struct listnode            stream_list_node;
+    struct pcm_device_profile* pcm_profile;
+    struct pcm*                pcm;
+    int                        status;
+    /* TODO: remove resampler if possible when AudioFlinger supports downsampling from 48 to 8 */
+    struct resampler_itfe*     resampler;
+    int16_t*                   res_buffer;
+    size_t                     res_byte_count;
+    int                        sound_trigger_handle;
+};
+
 struct stream_out {
     struct audio_stream_out     stream;
     pthread_mutex_t             lock; /* see note below on mutex acquisition order */
     pthread_mutex_t             pre_lock; /* acquire before lock to avoid DOS by playback thread */
     pthread_cond_t              cond;
     struct pcm_config           config;
-    int                         pcm_device_id;
-    struct pcm                  *pcm;
+    struct listnode             pcm_dev_list;
     struct compr_config         compr_config;
     struct compress*            compr;
     int                         standby;
@@ -285,8 +313,7 @@ struct stream_in {
     pthread_mutex_t                     pre_lock; /* acquire before lock to avoid DOS by
                                                      capture thread */
     struct pcm_config                   config;
-    struct pcm                          *pcm;
-    int                                 pcm_device_id;
+    struct listnode                     pcm_dev_list;
     int                                 standby;
     audio_source_t                      source;
     audio_devices_t                     devices;
@@ -337,6 +364,15 @@ struct stream_in {
                                                         entering standby */
 };
 
+struct mixer_card {
+    struct listnode     adev_list_node;
+    struct listnode     uc_list_node[AUDIO_USECASE_MAX];
+    int                 card;
+    struct mixer*       mixer;
+    struct audio_route* audio_route;
+    struct timespec     dsp_poweroff_time;
+};
+
 struct audio_usecase {
     struct listnode         adev_list_node;
     audio_usecase_t         id;
@@ -345,6 +381,7 @@ struct audio_usecase {
     snd_device_t            out_snd_device;
     snd_device_t            in_snd_device;
     struct audio_stream*    stream;
+    struct listnode         mixer_list;
 };
 
 struct voice_data {
@@ -352,18 +389,16 @@ struct voice_data {
     float volume;
     bool  bluetooth_nrec;
     bool  bluetooth_wb;
-    struct voice_session *session;
+    void  *session;
 };
 
 struct audio_device {
     struct audio_hw_device  device;
     pthread_mutex_t         lock; /* see note below on mutex acquisition order */
-    struct mixer            *mixer;
-    struct audio_route      *audio_route;
+    struct listnode         mixer_list;
     audio_mode_t            mode;
     struct stream_in*       active_input;
     struct stream_out*      primary_output;
-    struct stream_out*      current_call_output;
     bool                    mic_mute;
     bool                    screen_off;
 
@@ -388,6 +423,11 @@ struct audio_device {
     // with audio device mutex if needed
     volatile int32_t        echo_reference_generation;
 #endif
+
+    void*                   sound_trigger_lib;
+    int                     (*sound_trigger_open_for_streaming)();
+    size_t                  (*sound_trigger_read_samples)(int, void*, size_t);
+    int                     (*sound_trigger_close_for_streaming)(int);
 
     pthread_mutex_t         lock_inputs; /* see note below on mutex acquisition order */
     amplifier_device_t      *amp;
