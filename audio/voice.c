@@ -181,7 +181,6 @@ static void stop_voice_session_bt_sco(struct voice_session *session) {
 void start_voice_session_bt_sco(struct voice_session *session)
 {
     struct pcm_config *voice_sco_config;
-    struct voice_data *vdata = container_of(session, struct voice_data, session);
 
     if (session->pcm_sco_rx != NULL || session->pcm_sco_tx != NULL) {
         ALOGW("%s: SCO PCMs already open!\n", __func__);
@@ -190,7 +189,7 @@ void start_voice_session_bt_sco(struct voice_session *session)
 
     ALOGV("%s: Opening SCO PCMs", __func__);
 
-    if (vdata->bluetooth_wb) {
+    if (voice_session_uses_wideband(session)) {
         ALOGV("%s: pcm_config wideband", __func__);
         voice_sco_config = &pcm_config_voice_sco_wb;
     } else {
@@ -246,7 +245,7 @@ int start_voice_session(struct voice_session *session)
     ALOGV("%s: Opening voice PCMs", __func__);
 
     /* TODO: Handle wb_amr=2 */
-    if (session->wb_amr_type >= 1) {
+    if (voice_session_uses_wideband(session)) {
         ALOGV("%s: pcm_config wideband", __func__);
         voice_config = &pcm_config_voicecall_wideband;
     } else {
