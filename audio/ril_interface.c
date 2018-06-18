@@ -56,14 +56,18 @@ static int ril_internal_wb_amr_callback(HRilClient client __unused,
     int wb_amr_type = 0;
 
     if (_wb_amr_data == NULL || _wb_amr_callback == NULL) {
+        ALOGE("%s: _wb_amr_data(%p) or_wb_amr_callback(%p) are not set", __func__,
+            _wb_amr_data, _wb_amr_callback);
         return -1;
     }
 
     if (datalen != 1) {
+        ALOGE("%s: datalen(%zd) does not match expected size(1)", __func__, datalen);
         return -1;
     }
 
     wb_amr_type = *((int *)data);
+    ALOGI("%s: wb_amr_type = %d", __func__, wb_amr_type);
 
     _wb_amr_callback(_wb_amr_data, wb_amr_type);
 
