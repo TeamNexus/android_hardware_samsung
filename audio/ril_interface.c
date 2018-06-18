@@ -102,6 +102,7 @@ static int ril_connect_if_required(struct ril_handle *ril)
 int ril_open(struct ril_handle *ril)
 {
     char property[PROPERTY_VALUE_MAX];
+    int rc;
 
     if (ril == NULL) {
         return -1;
@@ -123,6 +124,18 @@ int ril_open(struct ril_handle *ril)
     if (ril->volume_steps_max == 0) {
         ril->volume_steps_max = atoi(VOLUME_STEPS_DEFAULT);
     }
+
+    /*
+     * Delay audioserver processing until we have a proper connection to
+     * the RIL socket. This is required for a proper WB-AMR callback
+     */
+    do {
+        rc = ril_connect_if_required(ril);
+        if (rc != 0) {
+            ALOGE("%s: Failed to connect to RIL (%s), retrying...", __func__, strerror(rc));
+            sleep(1);
+        }
+    } while (rc != 0);
 
     return 0;
 }
@@ -159,6 +172,12 @@ int ril_set_wb_amr_callback(struct ril_handle *ril,
 
     if (fn == NULL || data == NULL) {
         return -1;
+    }
+
+    rc = ril_connect_if_required(ril);
+    if (rc != 0) {
+        ALOGE("%s: Failed to connect to RIL (%s)", __func__, strerror(rc));
+        return 0;
     }
 
     _wb_amr_callback = fn;
