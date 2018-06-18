@@ -93,6 +93,7 @@ int stop_voice_call(struct audio_device *adev);
 
 void set_voice_session_audio_path(struct voice_session *session)
 {
+    struct voice_data *vdata = container_of(session, struct voice_data, session);
     enum _AudioPath device_type;
     int rc;
 
@@ -112,7 +113,11 @@ void set_voice_session_audio_path(struct voice_session *session)
         case AUDIO_DEVICE_OUT_BLUETOOTH_SCO:
         case AUDIO_DEVICE_OUT_BLUETOOTH_SCO_HEADSET:
         case AUDIO_DEVICE_OUT_BLUETOOTH_SCO_CARKIT:
-            device_type = SOUND_AUDIO_PATH_BLUETOOTH;
+            if (vdata->bluetooth_wb) {
+                device_type = SOUND_AUDIO_PATH_BLUETOOTH_WB;
+            } else {
+                device_type = SOUND_AUDIO_PATH_BLUETOOTH;
+            }
             break;
         default:
             /* if output device isn't supported, use earpiece by default */
