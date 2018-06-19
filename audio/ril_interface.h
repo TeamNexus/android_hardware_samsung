@@ -34,7 +34,7 @@ typedef void (*ril_wb_amr_callback)(void *data, int wb_amr_type);
 
 struct ril_handle
 {
-    void *client;
+    HRilClient client;
     int volume_steps_max;
     pthread_t rilConnThread;
 };
