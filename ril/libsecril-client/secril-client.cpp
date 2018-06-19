@@ -1173,16 +1173,13 @@ error:
     return RIL_CLIENT_ERR_UNKNOWN;
 }
 
-
 static bool isValidSoundType(SoundType type) {
     return (type >= SOUND_TYPE_VOICE && type <= SOUND_TYPE_BTVOICE);
 }
 
-
 static bool isValidAudioPath(AudioPath path) {
-    return (path >= SOUND_AUDIO_PATH_EARPIECE && path <= OEM_SND_AUDIO_PATH_BT_WB_NSEC_OFF);
+    return (path >= SOUND_AUDIO_PATH_EARPIECE && path <= SOUND_AUDIO_PATH_BLUETOOTH_WB_NO_NR);
 }
-
 
 static bool isValidSoundClockCondition(SoundClockCondition condition) {
     return (condition >= SOUND_CLOCK_STOP && condition <= SOUND_CLOCK_START);
@@ -1199,7 +1196,6 @@ static bool isValidMuteCondition(MuteCondition condition) {
 static bool isValidTwoMicCtrl(TwoMicSolDevice device, TwoMicSolReport report) {
     return (device >= AUDIENCE && device <= FORTEMEDIA && report >= TWO_MIC_SOLUTION_OFF && report <= TWO_MIC_SOLUTION_ON  );
 }
-
 
 static char ConvertSoundType(SoundType type) {
     switch (type) {
