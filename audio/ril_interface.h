@@ -20,6 +20,8 @@
 #include <samsung_audio.h>
 #include <secril-client.h>
 
+#include <pthread.h>
+
 /**
  * @brief The callback to change to wideband which should
  * be implemented by the audio HAL.
@@ -34,6 +36,7 @@ struct ril_handle
 {
     void *client;
     int volume_steps_max;
+    pthread_t rilConnThread;
 };
 
 
