@@ -99,6 +99,23 @@ static int ril_connect_if_required(struct ril_handle *ril)
     return 0;
 }
 
+static void *ril_connect(void *data)
+{
+    struct ril_handle *ril = (struct ril_handle *)data;
+    int rc;
+
+    do {
+        rc = ril_connect_if_required(ril);
+        if (rc != 0) {
+            ALOGE("%s: Failed to connect to RIL (%s), retrying...", __func__, strerror(rc));
+            sleep(1);
+        }
+    } while (rc != 0);
+
+    ALOGI("%s: connected to RIL!!", __func__);
+    return NULL;
+}
+
 int ril_open(struct ril_handle *ril)
 {
     char property[PROPERTY_VALUE_MAX];
@@ -125,17 +142,19 @@ int ril_open(struct ril_handle *ril)
         ril->volume_steps_max = atoi(VOLUME_STEPS_DEFAULT);
     }
 
-    /*
-     * Delay audioserver processing until we have a proper connection to
-     * the RIL socket. This is required for a proper WB-AMR callback
-     */
-    do {
-        rc = ril_connect_if_required(ril);
-        if (rc != 0) {
-            ALOGE("%s: Failed to connect to RIL (%s), retrying...", __func__, strerror(rc));
-            sleep(1);
-        }
-    } while (rc != 0);
+#ifndef RIL_OPEN_SYNCHRONOUS
+    rc = pthread_create(&ril->rilConnThread, NULL, ril_connect, ril);
+    if (rc)
+#endif
+    {
+        /*
+         * Legacy operation:
+         *   If the device does not properly support connecting to the RIL
+         *   asynchronously, the connection will be done synchronously. Be cautious
+         *   as this extends the total boot for several seconds.
+         */
+        ril_connect((void *)ril);
+    }
 
     return 0;
 }
