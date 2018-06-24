@@ -1151,13 +1151,6 @@ static int SendOemRequestHookRaw(HRilClient client, int req_id, char *data, size
         goto error;
     }
 
-    // check if the handler for specified event is NULL and deregister token
-    // to prevent token pool overflow
-    if(!FindReqHandler(client_prv, token, &check_req_id)) {
-        FreeToken(&(client_prv->token_pool), token);
-        ClearReqHistory(client_prv, token);
-    }
-
     return RIL_CLIENT_ERR_SUCCESS;
 
 error:
