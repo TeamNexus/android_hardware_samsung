@@ -1439,13 +1439,11 @@ static int processSolicited(RilClientPrv *prv, Parcel &p) {
         req_func(prv->parent, data, len);
 
         if(prv->b_del_handler) {
-            prv->b_del_handler = 0;
+         prv->b_del_handler = 0;
             RegisterRequestCompleteHandler(prv->parent, req_id, NULL);
         }
     } else {
         RLOGV("%s: No handler for token %d\n", __FUNCTION__, token);
-        FreeToken(&(prv->token_pool), token);
-        ClearReqHistory(prv, token);
     }
 
 error:
