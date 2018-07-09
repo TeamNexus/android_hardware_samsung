@@ -1943,7 +1943,7 @@ Return<void> RadioImpl::setInitialAttachApn(int32_t serial, const DataProfileInf
 
 #ifdef NEEDS_ROAMING_PROTOCOL_FIELD
         if (!copyHidlStringToRil(&iaa.roamingProtocol, dataProfileInfo.roamingProtocol, pRI)) {
-            memsetAndFreeStrings(4, iaa.apn, iaa.protocol, iaa.username, iaa.roamingProtocol);
+            memsetAndFreeStrings(4, iaa.apn, iaa.protocol, iaa.username, iaa.password);
             return Void();
         }
 #endif
@@ -1954,7 +1954,12 @@ Return<void> RadioImpl::setInitialAttachApn(int32_t serial, const DataProfileInf
 
         CALL_ONREQUEST(RIL_REQUEST_SET_INITIAL_ATTACH_APN, &iaa, sizeof(iaa), pRI, mSlotId);
 
+#ifdef NEEDS_ROAMING_PROTOCOL_FIELD
+        memsetAndFreeStrings(5, iaa.apn, iaa.protocol, iaa.username, iaa.password,
+                iaa.roamingProtocol);
+#else
         memsetAndFreeStrings(4, iaa.apn, iaa.protocol, iaa.username, iaa.password);
+#endif
     } else {
         RIL_InitialAttachApn_v15 iaa = {};
 
@@ -6695,8 +6700,25 @@ int radio::nitzTimeReceivedInd(int slotId,
             RLOGE("nitzTimeReceivedInd: invalid response");
             return 0;
         }
-        hidl_string nitzTime = convertCharPtrToHidlString((char *) response);
+        hidl_string nitzTime;
         int64_t timeReceived = android::elapsedRealtime();
+        char *resp = strndup((char *) response, responseLen);
+        char *tmp = resp;
+
+        /* Find the 3rd comma */
+        for (int i = 0; i < 3; i++) {
+            if (tmp != NULL) {
+                tmp = strchr(tmp + 1, ',');
+            }
+        }
+
+        /* Make the 3rd comma the end of the string */
+        if (tmp != NULL) {
+            *tmp = '\0';
+        }
+
+        nitzTime = convertCharPtrToHidlString(resp);
+        free(resp);
 #if VDBG
         RLOGD("nitzTimeReceivedInd: nitzTime %s receivedTime %" PRId64, nitzTime.c_str(),
                 timeReceived);
@@ -7654,6 +7676,18 @@ int radio::cdmaInfoRecInd(int slotId,
                     record->signal[0].signalType = infoRec->rec.signal.signalType;
                     record->signal[0].alertPitch = infoRec->rec.signal.alertPitch;
                     record->signal[0].signal = infoRec->rec.signal.signal;
+
+                    /* Drop the response to workaround the "ring of death" bug */
+                    if (infoRec->rec.signal.isPresent
+                            /* IS95_CONST_IR_SIGNAL_IS54B */
+                            && infoRec->rec.signal.signalType == 2
+                            /* IS95_CONST_IR_ALERT_MED */
+                            && infoRec->rec.signal.alertPitch == 0
+                            /* IS95_CONST_IR_SIG_IS54B_L */
+                            && infoRec->rec.signal.signal == 1) {
+                        return 0;
+                    }
+
                     break;
                 }
 
