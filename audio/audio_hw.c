@@ -133,26 +133,6 @@ static struct pcm_device_profile pcm_device_capture_low_latency = {
     .devices = AUDIO_DEVICE_IN_BUILTIN_MIC|AUDIO_DEVICE_IN_WIRED_HEADSET|AUDIO_DEVICE_IN_BACK_MIC,
 };
 
-static struct pcm_device_profile pcm_device_playback_sco = {
-    .config = {
-        .channels = SCO_DEFAULT_CHANNEL_COUNT,
-        .rate = SCO_DEFAULT_SAMPLING_RATE,
-        .period_size = SCO_PERIOD_SIZE,
-        .period_count = SCO_PERIOD_COUNT,
-        .format = PCM_FORMAT_S16_LE,
-        .start_threshold = SCO_START_THRESHOLD,
-        .stop_threshold = SCO_STOP_THRESHOLD,
-        .silence_threshold = 0,
-        .avail_min = SCO_AVAILABLE_MIN,
-    },
-    .card = SOUND_CARD,
-    .id = SOUND_PLAYBACK_SCO_DEVICE,
-    .type = PCM_PLAYBACK,
-    .devices =
-            AUDIO_DEVICE_OUT_BLUETOOTH_SCO|AUDIO_DEVICE_OUT_BLUETOOTH_SCO_HEADSET|
-            AUDIO_DEVICE_OUT_BLUETOOTH_SCO_CARKIT,
-};
-
 static struct pcm_device_profile pcm_device_capture_sco = {
     .config = {
         .channels = SCO_DEFAULT_CHANNEL_COUNT,
