@@ -72,6 +72,10 @@ enum power_profile_e {
 
 static enum power_profile_e current_power_profile = PROFILE_BALANCED;
 
+// Custom Lineage hints
+const static power_hint_t POWER_HINT_CPU_BOOST = (power_hint_t)0x00000110;
+const static power_hint_t POWER_HINT_SET_PROFILE = (power_hint_t)0x00000111;
+
 /**********************************************************
  *** HELPER FUNCTIONS
  **********************************************************/
@@ -519,16 +523,6 @@ static void samsung_power_hint(struct power_module *module,
     }
 }
 
-static int samsung_get_feature(struct power_module *module __unused,
-                               feature_t feature)
-{
-    if (feature == POWER_FEATURE_SUPPORTED_PROFILES) {
-        return PROFILE_MAX;
-    }
-
-    return -1;
-}
-
 static void samsung_set_feature(struct power_module *module __unused, feature_t feature, int state __unused)
 {
     switch (feature) {
@@ -562,7 +556,6 @@ struct samsung_power_module HAL_MODULE_INFO_SYM = {
         .init = samsung_power_init,
         .setInteractive = samsung_power_set_interactive,
         .powerHint = samsung_power_hint,
-        .getFeature = samsung_get_feature,
         .setFeature = samsung_set_feature
     },
 
